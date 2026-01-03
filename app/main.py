@@ -1,28 +1,38 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
-from app.storage import url_db
-from app.utils import generate_short_code
+from fastapi import FastAPI
+from app.routes import router
 
-app = FastAPI()
+app = FastAPI(title = "URL Shortner")
 
-@app.get("/healthcheck")
-def health():
-    return {"status": "OK"}
+app.include_router(router)
 
-@app.post("/shorten")
-def shorten_url(original_url: str):
-    short_code = generate_short_code()
-    url_db[short_code] = original_url
+@app.get("/health")
+def health_check():
+    return {"Status":"Good"}
 
-    return {
-        "short_url": f"http://127.0.0.1:8000/{short_code}"
-    }
+# from fastapi.responses import RedirectResponse
+# from app.storage import url_db
+# from app.utils import generate_short_code
+
+# app = FastAPI()
+
+# @app.get("/healthcheck")
+# def health():
+#     return {"status": "OK"}
+
+# @app.post("/shorten")
+# def shorten_url(original_url: str):
+#     short_code = generate_short_code()
+#     url_db[short_code] = original_url
+
+#     return {
+#         "short_url": f"http://127.0.0.1:8000/{short_code}"
+#     }
 
 
-#Redirect EndPoint
-@app.get("/{short_code}")
-def redirect_to_url(short_code: str):
-    if short_code not in url_db:
-        raise HTTPException(status_code = 404, detail = "URL not found")
+# #Redirect EndPoint
+# @app.get("/{short_code}")
+# def redirect_to_url(short_code: str):
+#     if short_code not in url_db:
+#         raise HTTPException(status_code = 404, detail = "URL not found")
 
-    return RedirectResponse(url = url_db[short_code],status_code = 302)
+#     return RedirectResponse(url = url_db[short_code],status_code = 302)
