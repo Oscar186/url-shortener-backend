@@ -7,9 +7,11 @@ from app.models import URL
 
 router = APIRouter()
 
-def generate_short_code(length = 6):
-    characters = string.ascii_letters + string.digits
-    return ''.join(random.choice(characters) for _ in range(length))
+def generate_short_code(length=6):
+    return ''.join(
+        random.choice(string.ascii_letters + string.digits)
+        for _ in range(length)
+    )
 
 @router.post("/shorten")
 def shorten_url(long_url: str, db: Session = Depends(get_db)):
@@ -18,26 +20,27 @@ def shorten_url(long_url: str, db: Session = Depends(get_db)):
     existing = db.query(URL).filter(URL.long_url == long_url).first()
     if existing:
         return {
-            "short_url": f"http://127.0.0.1/8000/{existing.short_code}"
-            }
+            "short_url": f"http://127.0.0.1:8000/{existing.short_code}"
+        }
 
-    #Generating the unique short code
+    # Generate unique short code
     while True:
         short_code = generate_short_code()
         if not db.query(URL).filter(URL.short_code == short_code).first():
             break
-    
+
     url = URL(
-        long_url = long_url, 
-        short_code = short_code, 
-        clicks = 0
-        )
+        long_url=long_url,
+        short_code=short_code,
+        clicks=0
+    )
+
     db.add(url)
-    db.commit()
+    db.commit()      # ✅ IMPORTANT
     db.refresh(url)
 
     return {
-        "short_url": f"http://127.0.0.1/8000/{short_code}"
+        "short_url": f"http://127.0.0.1:8000/{short_code}"
     }
 
 @router.get("/{short_code}")
@@ -46,9 +49,9 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
     url = db.query(URL).filter(URL.short_code == short_code).first()
 
     if not url:
-        raise HTTPException(status_code = 404, detail = "URL not found")
-    
-    url.clicks = (url.click or 0) + 1
+        raise HTTPException(status_code=404, detail="URL not found")
+
+    url.clicks = (url.clicks or 0) + 1
     db.commit()
 
     return RedirectResponse(url.long_url)
@@ -59,7 +62,7 @@ def url_stats(short_code: str, db: Session = Depends(get_db)):
     url = db.query(URL).filter(URL.short_code == short_code).first()
 
     if not url:
-        raise HTTPException(status_code = 404, detail = "URL not found")
+        raise HTTPException(status_code=404, detail="URL not found")
 
     return {
         "long_url": url.long_url,
