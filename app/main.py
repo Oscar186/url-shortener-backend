@@ -1,13 +1,24 @@
 from fastapi import FastAPI
-from app.routes import router
+from app.database import engine
+from app import models
+from app.routes.shortener import router
 
-app = FastAPI(title = "URL Shortner")
+app = FastAPI()
+
+models.Base.metadata.create_all(bind=engine)
 
 app.include_router(router)
 
-@app.get("/health")
-def health_check():
-    return {"Status":"Good"}
+
+# from app.routes import router
+
+# app = FastAPI(title = "URL Shortner")
+
+# app.include_router(router)
+
+# @app.get("/health")
+# def health_check():
+#     return {"Status":"Good"}
 
 # from fastapi.responses import RedirectResponse
 # from app.storage import url_db
