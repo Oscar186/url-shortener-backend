@@ -11,7 +11,11 @@ DATABASE_URL = URL.create(
     database="url_shortener"
 )
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(
+    DATABASE_URL, 
+    echo=True,       #Logs SQL Queries (disable in prod)
+    pool_pre_ping = True
+)
 
 SessionLocal = sessionmaker(
     bind=engine,
@@ -28,5 +32,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# url_db = {}
