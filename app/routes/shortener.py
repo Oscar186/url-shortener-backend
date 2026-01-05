@@ -4,6 +4,10 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import URL
+from pydantic import BaseModel, HttpUrl
+
+class URLRequest(BaseModel):
+    long_url: HttpUrl
 
 router = APIRouter()
 
@@ -14,13 +18,14 @@ def generate_short_code(length=6):
     )
 
 @router.post("/shorten")
-def shorten_url(long_url: str, db: Session = Depends(get_db)):
+def shorten_url(request: URLRequest, db: Session = Depends(get_db)):
 
+    long_url = request.long_url
     # Deduplication
     existing = db.query(URL).filter(URL.long_url == long_url).first()
     if existing:
         return {
-            "short_url": f"http://127.0.0.1:8000/{existing.short_code}"
+            "short_url": f"http://127.0.0.1:8000/api/{existing.short_code}"
         }
 
     # Generate unique short code
@@ -40,7 +45,7 @@ def shorten_url(long_url: str, db: Session = Depends(get_db)):
     db.refresh(url)
 
     return {
-        "short_url": f"http://127.0.0.1:8000/{short_code}"
+        "short_url": f"http://127.0.0.1:8000/api/{short_code}"
     }
 
 @router.get("/{short_code}")
