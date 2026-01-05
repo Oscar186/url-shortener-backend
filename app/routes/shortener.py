@@ -6,6 +6,8 @@ from app.database import get_db
 from app.models import URL
 from pydantic import BaseModel, HttpUrl
 
+BASE_URL = "http://127.0.0.1:8000/api"
+
 class URLRequest(BaseModel):
     long_url: HttpUrl
 
@@ -25,7 +27,7 @@ def shorten_url(request: URLRequest, db: Session = Depends(get_db)):
     existing = db.query(URL).filter(URL.long_url == long_url).first()
     if existing:
         return {
-            "short_url": f"http://127.0.0.1:8000/api/{existing.short_code}"
+            "short_url": f"{BASE_URL}/{existing.short_code}"
         }
 
     # Generate unique short code
@@ -45,7 +47,7 @@ def shorten_url(request: URLRequest, db: Session = Depends(get_db)):
     db.refresh(url)
 
     return {
-        "short_url": f"http://127.0.0.1:8000/api/{short_code}"
+        "short_url": f"{BASE_URL}/{short_code}"
     }
 
 @router.get("/{short_code}")
