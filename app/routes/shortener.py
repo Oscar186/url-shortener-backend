@@ -59,7 +59,10 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
     url.clicks = (url.clicks or 0) + 1
     db.commit()
 
-    return RedirectResponse(url.long_url)
+    return RedirectResponse(
+        url = url.long_url,
+        status_code = 302
+    )
 
 @router.get("/stats/{short_code}")
 def url_stats(short_code: str, db: Session = Depends(get_db)):
